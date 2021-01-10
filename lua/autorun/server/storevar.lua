@@ -1,11 +1,11 @@
 --hook.Add( "PlayerSpawn", "First_Spawn", function( ply )
- --   ply.var = ply:health
-	
+-- ply.var = ply:health
+
 --end );
 
 
 --hook.Add("PlayerSpawn", "JobHealth", function(player)
---    player.varg = ent:Health
+--  player.varg = ent:Health
 --	PrintMessage( HUD_PRINTTALK, player.varg)
 --	end)
 
@@ -14,9 +14,8 @@ function playerRespawn( ply )
 	--print(ply:Health())
 	timer.Simple(1, function()
 		ply.var = ply:GetMaxHealth()
-		end)
-    --ply.var = ply:Health()
-	
+	end)
+	--ply.var = ply:Health()
 end
 
 hook.Add( "PlayerSpawn", "First_Spawn", playerRespawn );
@@ -28,8 +27,7 @@ function jobChange( ply, cat, cat2 )
 	timer.Simple(1, function()
 		ply.var = ply:GetMaxHealth()
 		end)
-    --ply.var = ply:Health()
-	
+	--ply.var = ply:Health()
 end
 
 hook.Add("OnPlayerChangedTeam", "Job_Change", jobChange);

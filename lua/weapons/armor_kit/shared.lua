@@ -74,7 +74,7 @@ end
 
 function SWEP:CanAttack()
 	if self:Clip1() <= 0 then
-		self.Owner:EmitSound("items/suitchargeno1.wav")
+		self.GetOwner():EmitSound("items/suitchargeno1.wav")
 		self:SetNextFire(CurTime() + 2)
 		return false
 	end
@@ -83,11 +83,11 @@ function SWEP:CanAttack()
 end
 
 function SWEP:GetHitTrace()
-	local shoot = self.Owner:GetShootPos()
+	local shoot = self.GetOwner():GetShootPos()
 	return util.TraceLine({
 		start = shoot,
-		endpos = shoot + self.Owner:GetAimVector() * 64,
-		filter = self.Owner,
+		endpos = shoot + self.GetOwner():GetAimVector() * 64,
+		filter = self.GetOwner(),
 	})
 end
 
@@ -104,18 +104,18 @@ function SWEP:PrimaryAttack()
 	local tr = self:GetHitTrace()
 	local need = (IsValid(tr.Entity) and tr.Entity:IsPlayer()) and math.min(100-tr.Entity:Armor(),self.ArmorAmount) or self.ArmorAmount
 	if self:Clip1() >= need and tr.Hit and IsValid(tr.Entity) and tr.Entity:IsPlayer() and tr.Entity:Armor() < 100 then
-		self.Owner:SetAnimation(PLAYER_ATTACK1) --DoAttackEvent()
+		self.GetOwner():SetAnimation(PLAYER_ATTACK1) --DoAttackEvent()
 		self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
 		self.IdleAnimation = CurTime() + self:SequenceDuration()
 
 		if SERVER then
 			self:TakePrimaryAmmo(need)
-			self.Owner:SetAnimation(PLAYER_ATTACK1)
-			tr.Entity:SetArmor(math.min(100,tr.Entity:Armor()+need))
+			self.GetOwner():SetAnimation(PLAYER_ATTACK1)
+			tr.Entity:SetArmor(math.min(100,tr.Entity:Armor() + need))
 			tr.Entity:EmitSound("items/battery_pickup.wav")
 		end
 	elseif SERVER then
-		self.Owner:EmitSound("items/suitchargeno1.wav")
+		self.GetOwner():EmitSound("items/suitchargeno1.wav")
 	end
 end
 
@@ -123,21 +123,21 @@ function SWEP:SecondaryAttack()
 	if not self:CanAttack() then return end
 	self:SetNextFire(CurTime() + 2)
 
-	local need = math.min(100-self.Owner:Armor(),self.ArmorAmount)
-	if self.Owner:Armor() < 100 and self:Clip1() >= need then
+	local need = math.min(100-self.GetOwner():Armor(),self.ArmorAmount)
+	if self.GetOwner():Armor() < 100 and self:Clip1() >= need then
 		self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
-		self.Owner:SetAnimation(PLAYER_ATTACK1) --DoAttackEvent()
+		self.GetOwner():SetAnimation(PLAYER_ATTACK1) --DoAttackEvent()
 		self.IdleAnimation = CurTime() + self:SequenceDuration()
 
 		if SERVER then
-			local need = math.min(100-self.Owner:Armor(),self.ArmorAmount)
+			local need = math.min(100-self.GetOwner():Armor(),self.ArmorAmount)
 			self:TakePrimaryAmmo(need)
-			self.Owner:SetAnimation(PLAYER_ATTACK1)
-			self.Owner:SetArmor(math.min(100,self.Owner:Armor()+need))
-			self.Owner:EmitSound("items/battery_pickup.wav")
+			self.GetOwner():SetAnimation(PLAYER_ATTACK1)
+			self.GetOwner():SetArmor(math.min(100,self.GetOwner():Armor() + need))
+			self.GetOwner():EmitSound("items/battery_pickup.wav")
 		end
 	elseif SERVER then
-		self.Owner:EmitSound("items/suitchargeno1.wav")
+		self.GetOwner():EmitSound("items/suitchargeno1.wav")
 	end
 end
 
