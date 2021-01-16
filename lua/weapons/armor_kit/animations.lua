@@ -7,7 +7,7 @@
 	   
 	DESCRIPTION:
 		This script is meant for experienced scripters 
-		that KNOW WHAT THEY ARE DOING. Don't come to me 
+		that KNOW WHAT THEY ARE DOING (im smart shut up clavus you fat nerd). Don't come to me (i wont im not gay idiot)
 		with basic Lua questions.
 		
 		Just copy into your SWEP or SWEP base of choice
