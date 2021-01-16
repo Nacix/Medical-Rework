@@ -89,8 +89,8 @@ function SWEP:Initialize()
 		self:CreateModels(self.WElements) -- create worldmodels
 
 		-- init view model bone build function
-		if IsValid(self.GetOwner()) then
-			local vm = self.GetOwner():GetViewModel()
+		if IsValid(self:GetOwner()) then
+			local vm = self:GetOwner():GetViewModel()
 			if IsValid(vm) then
 				self:ResetBonePositions(vm)
 
@@ -119,9 +119,9 @@ function SWEP:PrimaryAttack()
 	if ( CLIENT ) then return end
 
 	local tr = util.TraceLine( {
-		start = self.GetOwner():GetShootPos(),
-		endpos = self.GetOwner():GetShootPos() + self.GetOwner():GetAimVector() * 128,
-		filter = self.GetOwner()
+		start = self:GetOwner():GetShootPos(),
+		endpos = self:GetOwner():GetShootPos() + self:GetOwner():GetAimVector() * 128,
+		filter = self:GetOwner()
 	} )
 
 	local ent = tr.Entity
@@ -138,15 +138,15 @@ function SWEP:PrimaryAttack()
 
 		self:SendWeaponAnim( ACT_VM_PRIMARYATTACK )
 
-		self:SetNextPrimaryFire( CurTime() + self:SequenceDuration() + 0 )
-		self.GetOwner():SetAnimation( PLAYER_ATTACK1 )
+		self:SetNextPrimaryFire( CurTime() + 1.5 )
+		self:GetOwner():SetAnimation( PLAYER_ATTACK1 )
 
 		-- Even though the viewmodel has looping IDLE anim at all times, we need this to make fire animation work in multiplayer
 		timer.Create( "weapon_idle" .. self:EntIndex(), self:SequenceDuration(), 1, function() if ( IsValid( self ) ) then self:SendWeaponAnim( ACT_VM_IDLE ) end end )
 
 	else
 
-		self.GetOwner():EmitSound( DenySound )
+		self:GetOwner():EmitSound( DenySound )
 		self:SetNextPrimaryFire( CurTime() + .1 )
 
 	end
@@ -158,13 +158,13 @@ function SWEP:Reload()
 	if ( CLIENT ) then return end
 
 	local tr = util.TraceLine( {
-		start = self.GetOwner():GetShootPos(),
-		endpos = self.GetOwner():GetShootPos() + self.GetOwner():GetAimVector() * 128,
-		filter = self.GetOwner()
+		start = self:GetOwner():GetShootPos(),
+		endpos = self:GetOwner():GetShootPos() + self:GetOwner():GetAimVector() * 128,
+		filter = self:GetOwner()
 	} )
 
 	local ent = tr.Entity
-	local me = self.GetOwner()
+	local me = self:GetOwner()
 
 	local need = self.HealAmount
 
@@ -180,7 +180,7 @@ function SWEP:Reload()
 		self:SendWeaponAnim( ACT_VM_PRIMARYATTACK )
 
 		self:SetNextPrimaryFire( CurTime() + self:SequenceDuration() + 0 )
-		self.GetOwner():SetAnimation( PLAYER_ATTACK1 )
+		self:GetOwner():SetAnimation( PLAYER_ATTACK1 )
 
 		-- Even though the viewmodel has looping IDLE anim at all times, we need this to make fire animation work in multiplayer
 		timer.Create( "weapon_idle" .. self:EntIndex(), self:SequenceDuration(), 1, function() if ( IsValid( self ) ) then self:SendWeaponAnim( ACT_VM_IDLE ) end end )
@@ -210,7 +210,7 @@ function SWEP:SecondaryAttack()
 
 	if ( CLIENT ) then return end
 
-	local ent = self.GetOwner()
+	local ent = self:GetOwner()
 	--print (ent.var)
 	local need
 
@@ -227,14 +227,14 @@ function SWEP:SecondaryAttack()
 
 		--self:SetNextSecondaryFire( CurTime() + self:SequenceDuration() + 1 )
 		self:SetNextSecondaryFire( CurTime() + 1 )
-		self.GetOwner():SetAnimation( PLAYER_ATTACK1 )
+		self:GetOwner():SetAnimation( PLAYER_ATTACK1 )
 
 		timer.Create( "weapon_idle" .. self:EntIndex(), self:SequenceDuration(), 1, function() if ( IsValid( self ) ) then self:SendWeaponAnim( ACT_VM_IDLE ) end end )
 
 	else
 
 		ent:EmitSound( DenySound )
-		self:SetNextSecondaryFire( CurTime() + 1 )
+		self:SetNextSecondaryFire( CurTime() + 0.8 )
 
 	end
 
@@ -250,8 +250,8 @@ function SWEP:OnRemove()
 end
 
 function SWEP:Holster()
-	if CLIENT && IsValid(self.GetOwner()) then
-		local vm = self.GetOwner():GetViewModel()
+	if CLIENT && IsValid(self:GetOwner()) then
+		local vm = self:GetOwner():GetViewModel()
 		if IsValid(vm) then
 			self:ResetBonePositions(vm)
 		end
@@ -278,7 +278,7 @@ if CLIENT then
 	SWEP.vRenderOrder = nil
 	function SWEP:ViewModelDrawn()
 
-		local vm = self.GetOwner():GetViewModel()
+		local vm = self:GetOwner():GetViewModel()
 		if !IsValid(vm) then return end
 
 		if (!self.VElements) then return end
@@ -424,8 +424,8 @@ end
 			end
 		end
 
-		if (IsValid(self.GetOwner())) then
-			bone_ent = self.GetOwner()
+		if (IsValid(self:GetOwner())) then
+			bone_ent = self:GetOwner()
 		else
 			-- when the weapon is dropped
 			bone_ent = self
@@ -545,8 +545,8 @@ end
 				pos, ang = m:GetTranslation(), m:GetAngles()
 			end
 
-			if (IsValid(self.GetOwner()) and self.GetOwner():IsPlayer() and
-				ent == self.GetOwner():GetViewModel() and self.ViewModelFlip) then
+			if (IsValid(self:GetOwner()) and self:GetOwner():IsPlayer() and
+				ent == self:GetOwner():GetViewModel() and self.ViewModelFlip) then
 				ang.r = -ang.r -- Fixes mirrored models
 			end
 

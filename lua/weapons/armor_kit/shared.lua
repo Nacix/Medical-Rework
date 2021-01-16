@@ -4,18 +4,18 @@ if SERVER then
 	AddCSLuaFile("animations.lua")
 end
 
-SWEP.Category = "Logan's SWEPs"
-SWEP.PrintName = "Armorkit"
-SWEP.Author = "MrGeRoI"
-SWEP.Purpose = "" --"Repair armor people with your primary attack, or yourself with the secondary."
+SWEP.Category = "Tasty's SWEPs"
+SWEP.PrintName = "Armorpack"
+SWEP.Author = "MrGeRoI & Tasty"
+SWEP.Purpose = "Repair your teammates' armor with your primary attack, or your own with the secondary."
 
 SWEP.Spawnable = true
 
 SWEP.ViewModel = "models/weapons/c_medkit.mdl"--"models/weapons/c_grenade.mdl"
 SWEP.WorldModel = "models/items/battery.mdl" --"models/weapons/w_medkit.mdl"
 
-SWEP.Primary.ClipSize = 300 -- 100 -> 500
-SWEP.Primary.DefaultClip = 300 -- 100 -> 500
+SWEP.Primary.ClipSize = 200 -- 100 -> 500
+SWEP.Primary.DefaultClip = 200 -- 100 -> 500
 SWEP.Primary.Automatic = false
 SWEP.Primary.Ammo = "none"
 
@@ -24,7 +24,7 @@ SWEP.Secondary.DefaultClip = -1
 SWEP.Secondary.Automatic = false
 SWEP.Secondary.Ammo = "none"
 
-SWEP.MaxAmmo = 300 -- 100 -> 500
+SWEP.MaxAmmo = 200 -- 100 -> 500
 SWEP.ArmorAmount = 50 -- 15 -> 50
 
 function SWEP:Initialize()
@@ -41,7 +41,7 @@ function SWEP:Initialize()
 	timer.Create(self.TimerName,1,0,function()
 		if IsValid(wep) then
 			if wep:Clip1() < wep.MaxAmmo then
-				wep:SetClip1(math.min(wep:Clip1() + 10, wep.MaxAmmo)) -- 2/s -> 10/s
+				wep:SetClip1(math.min(wep:Clip1() + 7, wep.MaxAmmo)) -- 2/s -> 10/s
 			end
 		else
 			timer.Remove(wep.TimerName)
@@ -74,7 +74,7 @@ end
 
 function SWEP:CanAttack()
 	if self:Clip1() <= 0 then
-		self.GetOwner():EmitSound("items/suitchargeno1.wav")
+		self:GetOwner():EmitSound("items/suitchargeno1.wav")
 		self:SetNextFire(CurTime() + 2)
 		return false
 	end
@@ -83,11 +83,11 @@ function SWEP:CanAttack()
 end
 
 function SWEP:GetHitTrace()
-	local shoot = self.GetOwner():GetShootPos()
+	local shoot = self:GetOwner():GetShootPos()
 	return util.TraceLine({
 		start = shoot,
-		endpos = shoot + self.GetOwner():GetAimVector() * 64,
-		filter = self.GetOwner(),
+		endpos = shoot + self:GetOwner():GetAimVector() * 64,
+		filter = self:GetOwner(),
 	})
 end
 
@@ -104,18 +104,18 @@ function SWEP:PrimaryAttack()
 	local tr = self:GetHitTrace()
 	local need = (IsValid(tr.Entity) and tr.Entity:IsPlayer()) and math.min(100-tr.Entity:Armor(),self.ArmorAmount) or self.ArmorAmount
 	if self:Clip1() >= need and tr.Hit and IsValid(tr.Entity) and tr.Entity:IsPlayer() and tr.Entity:Armor() < 100 then
-		self.GetOwner():SetAnimation(PLAYER_ATTACK1) --DoAttackEvent()
+		self:GetOwner():SetAnimation(PLAYER_ATTACK1) --DoAttackEvent()
 		self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
 		self.IdleAnimation = CurTime() + self:SequenceDuration()
 
 		if SERVER then
 			self:TakePrimaryAmmo(need)
-			self.GetOwner():SetAnimation(PLAYER_ATTACK1)
-			tr.Entity:SetArmor(math.min(100,tr.Entity:Armor() + need))
+			self:GetOwner():SetAnimation(PLAYER_ATTACK1)
+			tr.Entity:SetArmor(math.min(100, tr.Entity:Armor() + need))
 			tr.Entity:EmitSound("items/battery_pickup.wav")
 		end
 	elseif SERVER then
-		self.GetOwner():EmitSound("items/suitchargeno1.wav")
+		self:GetOwner():EmitSound("items/suitchargeno1.wav")
 	end
 end
 
@@ -123,21 +123,21 @@ function SWEP:SecondaryAttack()
 	if not self:CanAttack() then return end
 	self:SetNextFire(CurTime() + 2)
 
-	local need = math.min(100-self.GetOwner():Armor(),self.ArmorAmount)
-	if self.GetOwner():Armor() < 100 and self:Clip1() >= need then
+	local need = math.min(100-self:GetOwner():Armor(),self.ArmorAmount)
+	if self:GetOwner():Armor() < 100 and self:Clip1() >= need then
 		self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
-		self.GetOwner():SetAnimation(PLAYER_ATTACK1) --DoAttackEvent()
+		self:GetOwner():SetAnimation(PLAYER_ATTACK1) --DoAttackEvent()
 		self.IdleAnimation = CurTime() + self:SequenceDuration()
 
 		if SERVER then
-			local need = math.min(100-self.GetOwner():Armor(),self.ArmorAmount)
+			local need = math.min(100-self:GetOwner():Armor(),self.ArmorAmount)
 			self:TakePrimaryAmmo(need)
-			self.GetOwner():SetAnimation(PLAYER_ATTACK1)
-			self.GetOwner():SetArmor(math.min(100,self.GetOwner():Armor() + need))
-			self.GetOwner():EmitSound("items/battery_pickup.wav")
+			self:GetOwner():SetAnimation(PLAYER_ATTACK1)
+			self:GetOwner():SetArmor(math.min(100,self:GetOwner():Armor() + need))
+			self:GetOwner():EmitSound("items/battery_pickup.wav")
 		end
 	elseif SERVER then
-		self.GetOwner():EmitSound("items/suitchargeno1.wav")
+		self:GetOwner():EmitSound("items/suitchargeno1.wav")
 	end
 end
 

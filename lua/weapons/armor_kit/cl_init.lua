@@ -1,7 +1,7 @@
 include("shared.lua")
 include("animations.lua")
 
-SWEP.Category = "Tasty's Westar Rework"
+SWEP.Category = "Tasty's SWEPs"
 
 SWEP.UseHands = true
 SWEP.DrawAmmo = true
