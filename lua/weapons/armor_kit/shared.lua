@@ -14,8 +14,8 @@ SWEP.Spawnable = true
 SWEP.ViewModel = "models/weapons/c_medkit.mdl"--"models/weapons/c_grenade.mdl"
 SWEP.WorldModel = "models/items/battery.mdl" --"models/weapons/w_medkit.mdl"
 
-SWEP.Primary.ClipSize = 200 -- 100 -> 500
-SWEP.Primary.DefaultClip = 200 -- 100 -> 500
+SWEP.Primary.ClipSize = 175 -- 100 -> 500
+SWEP.Primary.DefaultClip = 175 -- 100 -> 500
 SWEP.Primary.Automatic = false
 SWEP.Primary.Ammo = "none"
 
@@ -24,8 +24,8 @@ SWEP.Secondary.DefaultClip = -1
 SWEP.Secondary.Automatic = false
 SWEP.Secondary.Ammo = "none"
 
-SWEP.MaxAmmo = 200 -- 100 -> 500
-SWEP.ArmorAmount = 50 -- 15 -> 50
+SWEP.MaxAmmo = 150 -- 100 -> 500
+SWEP.ArmorAmount = 25 -- 15 -> 50\
 
 function SWEP:Initialize()
 	self:SetHoldType("slam")
@@ -38,7 +38,7 @@ function SWEP:Initialize()
 
 	self.TimerName = "armorkit_ammo" .. self:EntIndex()
 	local wep = self
-	timer.Create(self.TimerName,1,0,function()
+	timer.Create(self.TimerName, 1, 0, function()
 		if IsValid(wep) then
 			if wep:Clip1() < wep.MaxAmmo then
 				wep:SetClip1(math.min(wep:Clip1() + 7, wep.MaxAmmo)) -- 2/s -> 10/s
@@ -123,14 +123,14 @@ function SWEP:SecondaryAttack()
 	if not self:CanAttack() then return end
 	self:SetNextFire(CurTime() + 2)
 
-	local need = math.min(100-self:GetOwner():Armor(),self.ArmorAmount)
+	local need = math.min(100-self:GetOwner():Armor(), self.ArmorAmount)
 	if self:GetOwner():Armor() < 100 and self:Clip1() >= need then
 		self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
 		self:GetOwner():SetAnimation(PLAYER_ATTACK1) --DoAttackEvent()
 		self.IdleAnimation = CurTime() + self:SequenceDuration()
 
 		if SERVER then
-			local need = math.min(100-self:GetOwner():Armor(),self.ArmorAmount)
+			local need = math.min(100 - self:GetOwner():Armor(), self.ArmorAmount)
 			self:TakePrimaryAmmo(need)
 			self:GetOwner():SetAnimation(PLAYER_ATTACK1)
 			self:GetOwner():SetArmor(math.min(100,self:GetOwner():Armor() + need))
