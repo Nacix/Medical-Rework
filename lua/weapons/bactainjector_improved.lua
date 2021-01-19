@@ -198,10 +198,7 @@ function SWEP:Reload()
 		timer.Create( "weapon_idle" .. self:EntIndex(), self:SequenceDuration(), 1, function() if ( IsValid( self ) ) then self:SendWeaponAnim( ACT_VM_IDLE ) end end )
 	]]--
 	else
-
-
 		self:SetNextPrimaryFire( CurTime() + 1 )
-
 	end
 
 end
