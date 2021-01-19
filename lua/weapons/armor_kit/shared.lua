@@ -26,6 +26,7 @@ SWEP.Secondary.Ammo = "none"
 
 SWEP.MaxAmmo = 150 -- 100 -> 500
 SWEP.ArmorAmount = 25 -- 15 -> 50\
+SWEP.MaxArmorModifier = 0.80
 
 function SWEP:Initialize()
 	self:SetHoldType("slam")
@@ -41,13 +42,28 @@ function SWEP:Initialize()
 	timer.Create(self.TimerName, 1, 0, function()
 		if IsValid(wep) then
 			if wep:Clip1() < wep.MaxAmmo then
-				wep:SetClip1(math.min(wep:Clip1() + 7, wep.MaxAmmo)) -- 2/s -> 10/s
+				wep:SetClip1(math.min(wep:Clip1() + 10, wep.MaxAmmo)) -- This do be the recharge rate per second tho
 			end
 		else
 			timer.Remove(wep.TimerName)
 		end
 	end)
+end
 
+function CalcArmor(armor)
+	mod = 0.8
+	round = 5
+	val = armor * mod
+	valLow = round * math.floor(armor * mod / round)
+	valHigh = round * math.ceil(armor * mod / round)
+
+	if armor <= 100 then
+		return 100
+	elseif valHigh - val > val - valLow then
+		return valLow
+	else
+		return valHigh
+	end
 end
 
 function SWEP:Deploy()
@@ -102,8 +118,8 @@ function SWEP:PrimaryAttack()
 	self:SetNextFire(CurTime() + 2)
 
 	local tr = self:GetHitTrace()
-	local need = (IsValid(tr.Entity) and tr.Entity:IsPlayer()) and math.min(100-tr.Entity:Armor(),self.ArmorAmount) or self.ArmorAmount
-	if self:Clip1() >= need and tr.Hit and IsValid(tr.Entity) and tr.Entity:IsPlayer() and tr.Entity:Armor() < 100 then
+	local need = (IsValid(tr.Entity) and tr.Entity:IsPlayer()) and math.min(CalcArmor(tr.Entity:GetMaxArmor()) - tr.Entity:Armor(), self.ArmorAmount) or self.ArmorAmount
+	if self:Clip1() >= need and tr.Hit and IsValid(tr.Entity) and tr.Entity:IsPlayer() and tr.Entity:Armor() < CalcArmor(tr.Entity:GetMaxArmor()) then
 		self:GetOwner():SetAnimation(PLAYER_ATTACK1) --DoAttackEvent()
 		self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
 		self.IdleAnimation = CurTime() + self:SequenceDuration()
@@ -111,7 +127,7 @@ function SWEP:PrimaryAttack()
 		if SERVER then
 			self:TakePrimaryAmmo(need)
 			self:GetOwner():SetAnimation(PLAYER_ATTACK1)
-			tr.Entity:SetArmor(math.min(100, tr.Entity:Armor() + need))
+			tr.Entity:SetArmor(math.min(CalcArmor(tr.Entity:GetMaxArmor()), tr.Entity:Armor() + need))
 			tr.Entity:EmitSound("items/battery_pickup.wav")
 		end
 	elseif SERVER then
@@ -123,17 +139,17 @@ function SWEP:SecondaryAttack()
 	if not self:CanAttack() then return end
 	self:SetNextFire(CurTime() + 2)
 
-	local need = math.min(100-self:GetOwner():Armor(), self.ArmorAmount)
-	if self:GetOwner():Armor() < 100 and self:Clip1() >= need then
+	local need = math.min(CalcArmor(self:GetOwner():GetMaxArmor()) - self:GetOwner():Armor(), self.ArmorAmount)
+	if self:GetOwner():Armor() < CalcArmor(self:GetOwner():GetMaxArmor()) and self:Clip1() >= need then
 		self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
 		self:GetOwner():SetAnimation(PLAYER_ATTACK1) --DoAttackEvent()
 		self.IdleAnimation = CurTime() + self:SequenceDuration()
 
 		if SERVER then
-			local need = math.min(100 - self:GetOwner():Armor(), self.ArmorAmount)
+			local need = math.min(CalcArmor(self:GetOwner():GetMaxArmor()) - self:GetOwner():Armor(), self.ArmorAmount)
 			self:TakePrimaryAmmo(need)
 			self:GetOwner():SetAnimation(PLAYER_ATTACK1)
-			self:GetOwner():SetArmor(math.min(100,self:GetOwner():Armor() + need))
+			self:GetOwner():SetArmor(math.min(CalcArmor(self:GetOwner():GetMaxArmor()), self:GetOwner():Armor() + need))
 			self:GetOwner():EmitSound("items/battery_pickup.wav")
 		end
 	elseif SERVER then
