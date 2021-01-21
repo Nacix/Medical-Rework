@@ -14,18 +14,18 @@ SWEP.Spawnable = true
 SWEP.ViewModel = "models/weapons/c_medkit.mdl"--"models/weapons/c_grenade.mdl"
 SWEP.WorldModel = "models/items/battery.mdl" --"models/weapons/w_medkit.mdl"
 
-SWEP.Primary.ClipSize = 175 -- 100 -> 500
-SWEP.Primary.DefaultClip = 175 -- 100 -> 500
-SWEP.Primary.Automatic = false
+SWEP.Primary.ClipSize = 250 -- 100 -> 500
+SWEP.Primary.DefaultClip = 250 -- 100 -> 500
+SWEP.Primary.Automatic = true
 SWEP.Primary.Ammo = "none"
 
 SWEP.Secondary.ClipSize = -1
 SWEP.Secondary.DefaultClip = -1
-SWEP.Secondary.Automatic = false
+SWEP.Secondary.Automatic = true
 SWEP.Secondary.Ammo = "none"
 
-SWEP.MaxAmmo = 150 -- 100 -> 500
-SWEP.ArmorAmount = 25 -- 15 -> 50\
+SWEP.MaxAmmo = 250 -- 100 -> 500
+SWEP.ArmorVal = 2
 SWEP.MaxArmorModifier = 0.80
 
 function SWEP:Initialize()
@@ -39,7 +39,7 @@ function SWEP:Initialize()
 
 	self.TimerName = "armorkit_ammo" .. self:EntIndex()
 	local wep = self
-	timer.Create(self.TimerName, 1, 0, function()
+	timer.Create(self.TimerName, 0.85, 0, function()
 		if IsValid(wep) then
 			if wep:Clip1() < wep.MaxAmmo then
 				wep:SetClip1(math.min(wep:Clip1() + 10, wep.MaxAmmo)) -- This do be the recharge rate per second tho
@@ -51,11 +51,11 @@ function SWEP:Initialize()
 end
 
 function CalcArmor(armor)
-	mod = 0.8
-	round = 5
-	val = armor * mod
-	valLow = round * math.floor(armor * mod / round)
-	valHigh = round * math.ceil(armor * mod / round)
+	local mod = 0.8
+	local round = 5
+	local val = armor * mod
+	local valLow = round * math.floor(armor * mod / round)
+	local valHigh = round * math.ceil(armor * mod / round)
 
 	if armor <= 100 then
 		return 100
@@ -63,6 +63,14 @@ function CalcArmor(armor)
 		return valLow
 	else
 		return valHigh
+	end
+end
+
+function SWEP:HealArmor(...)
+	if ... == true then
+		return self:GetOwner():GetMaxArmor() / 4
+	else
+		return self:GetOwner():GetMaxArmor() / self.ArmorVal
 	end
 end
 
@@ -118,7 +126,7 @@ function SWEP:PrimaryAttack()
 	self:SetNextFire(CurTime() + 2)
 
 	local tr = self:GetHitTrace()
-	local need = (IsValid(tr.Entity) and tr.Entity:IsPlayer()) and math.min(CalcArmor(tr.Entity:GetMaxArmor()) - tr.Entity:Armor(), self.ArmorAmount) or self.ArmorAmount
+	local need = (IsValid(tr.Entity) and tr.Entity:IsPlayer()) and math.min(CalcArmor(tr.Entity:GetMaxArmor()) - tr.Entity:Armor(), self:HealArmor()) or self:HealArmor()
 	if self:Clip1() >= need and tr.Hit and IsValid(tr.Entity) and tr.Entity:IsPlayer() and tr.Entity:Armor() < CalcArmor(tr.Entity:GetMaxArmor()) then
 		self:GetOwner():SetAnimation(PLAYER_ATTACK1) --DoAttackEvent()
 		self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
@@ -139,14 +147,14 @@ function SWEP:SecondaryAttack()
 	if not self:CanAttack() then return end
 	self:SetNextFire(CurTime() + 2)
 
-	local need = math.min(CalcArmor(self:GetOwner():GetMaxArmor()) - self:GetOwner():Armor(), self.ArmorAmount)
+	local need = math.min(CalcArmor(self:GetOwner():GetMaxArmor()) - self:GetOwner():Armor(), self:HealArmor(true))
 	if self:GetOwner():Armor() < CalcArmor(self:GetOwner():GetMaxArmor()) and self:Clip1() >= need then
 		self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
 		self:GetOwner():SetAnimation(PLAYER_ATTACK1) --DoAttackEvent()
 		self.IdleAnimation = CurTime() + self:SequenceDuration()
 
 		if SERVER then
-			local need = math.min(CalcArmor(self:GetOwner():GetMaxArmor()) - self:GetOwner():Armor(), self.ArmorAmount)
+			local need = math.min(CalcArmor(self:GetOwner():GetMaxArmor()) - self:GetOwner():Armor(), self:HealArmor(true))
 			self:TakePrimaryAmmo(need)
 			self:GetOwner():SetAnimation(PLAYER_ATTACK1)
 			self:GetOwner():SetArmor(math.min(CalcArmor(self:GetOwner():GetMaxArmor()), self:GetOwner():Armor() + need))
